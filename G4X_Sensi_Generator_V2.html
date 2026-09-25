@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G4X Sensi Generator V2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(145deg,#0b1020,#202a48);color:#fff}.wrap{max-width:520px;margin:auto;padding:18px}.logo{text-align:center;font-size:30px;font-weight:900}.tag{text-align:center;color:#b7c1d9;margin:6px 0 18px}.box{background:#ffffff10;border:1px solid #ffffff1c;border-radius:20px;padding:18px;margin-bottom:14px}label{display:block;margin:11px 0 6px;font-weight:bold;color:#dce5fa}input,select{width:100%;padding:13px;border:0;border-radius:11px;font-size:16px;background:#fff;color:#111}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{width:100%;padding:14px;border:0;border-radius:12px;background:#ffb000;color:#111;font-weight:900;font-size:16px;margin-top:16px}.result{display:none}.profile{color:#ffca3a;font-weight:bold}.sens{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.item{background:#0a1222;border-radius:14px;padding:13px;text-align:center}.item span{display:block;color:#9eabc2;font-size:12px}.item b{font-size:25px}.note{font-size:12px;line-height:1.5;color:#aebbd4}.reset{background:#39445f;color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="logo">🎯 G4X SENSI</div>
+<div class="tag">Free Fire MAX • 0–200 Sensitivity</div>
+
+<div class="box">
+<label>📱 Device Name</label>
+<input id="device" placeholder="जैसे Redmi 13C / Vivo Y21A">
+
+<div class="row">
+<div><label>💾 RAM (GB)</label><input id="ram" type="number" min="1" max="24" placeholder="4"></div>
+<div><label>🎮 Max FPS</label><input id="fps" type="number" min="30" max="240" placeholder="60"></div>
+</div>
+
+<label>📅 Device कितना पुराना है? (Years)</label>
+<input id="age" type="number" min="0" max="15" step="0.5" placeholder="2">
+
+<button onclick="generate()">🔥 Generate Sensi</button>
+<p class="note">यह device-performance based starting profile है। Perfect headshot sensitivity की guarantee नहीं है; player की touch control के अनुसार थोड़ा adjustment जरूरी हो सकता है।</p>
+</div>
+
+<div id="result" class="box result">
+<div>📱 Device: <span class="profile" id="outDevice"></span></div>
+<div>⚙️ Profile: <span class="profile" id="profile"></span></div>
+<div class="sens">
+<div class="item"><span>General</span><b id="general"></b></div>
+<div class="item"><span>Red Dot</span><b id="red"></b></div>
+<div class="item"><span>2X Scope</span><b id="two"></b></div>
+<div class="item"><span>4X Scope</span><b id="four"></b></div>
+<div class="item"><span>Sniper</span><b id="sniper"></b></div>
+<div class="item"><span>Free Look</span><b id="free"></b></div>
+</div>
+<button class="reset" onclick="location.reload()">↻ New Device</button>
+</div>
+</div>
+
+<script>
+function clamp(n,a,b){return Math.max(a,Math.min(b,Math.round(n)))}
+
+function generate(){
+ const device=document.getElementById('device').value.trim();
+ const ram=Number(document.getElementById('ram').value);
+ const fps=Number(document.getElementById('fps').value);
+ const age=Number(document.getElementById('age').value);
+
+ if(!device){alert('Device name डालो।');return}
+ if(!ram||ram<1||ram>24){alert('RAM 1–24 GB के बीच डालो।');return}
+ if(!fps||fps<30||fps>240){alert('Max FPS 30–240 के बीच डालो।');return}
+ if(!Number.isFinite(age)||age<0||age>15){alert('Device age 0–15 years के बीच डालो।');return}
+
+ /*
+  Performance score:
+  - FPS and RAM raise the starting point
+  - device age slightly lowers it
+  The device name is also used as a stable small adjustment so
+  different device names don't automatically receive identical values.
+ */
+ let hash=0;
+ for(let i=0;i<device.length;i++) hash=(hash*31+device.charCodeAt(i))%17;
+ const score=(fps-30)*0.16 + ram*1.8 - age*2.2 + hash*0.35;
+ const base=clamp(145+score,100,190);
+
+ const values={
+  general:base,
+  red:clamp(base-5,90,185),
+  two:clamp(base-17,75,175),
+  four:clamp(base-29,60,165),
+  sniper:clamp(base-43,45,150),
+  free:clamp(base+2,95,195)
+ };
+
+ document.getElementById('outDevice').textContent=device;
+ document.getElementById('profile').textContent=
+   score>=35?'High Performance':score>=20?'Balanced Performance':'Low/Medium Performance';
+
+ for(const k in values) document.getElementById(k).textContent=values[k];
+ document.getElementById('result').style.display='block';
+ document.getElementById('result').scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>
